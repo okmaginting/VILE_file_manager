@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, simpledialog
 from tkinter import PhotoImage
 import datetime
+import shutil
 
 class FileManager:
     def __init__(self, root):
@@ -142,6 +143,9 @@ class FileManager:
         self.input_window = tk.Toplevel(self.root)
         self.input_window.title("New File")
         self.input_window.geometry("300x150")
+        self.input_window.transient(self.root)
+        self.input_window.grab_set()
+        self.center_window(self.input_window)
 
         input_label = ttk.Label(self.input_window, text="Enter file name:", font=("Helvetica", 12))
         input_label.pack(pady=10)
@@ -151,6 +155,14 @@ class FileManager:
 
         create_button = ttk.Button(self.input_window, text="Create", command=self.create_file_action, style="TButton")
         create_button.pack(pady=10)
+
+    def center_window(self, window):
+        window.update_idletasks()
+        width = window.winfo_width()
+        height = window.winfo_height()
+        x = (window.winfo_screenwidth() // 2) - (width // 2)
+        y = (window.winfo_screenheight() // 2) - (height // 2)
+        window.geometry(f'{width}x{height}+{x}+{y}')
 
     def create_file_action(self):
         file_name = self.file_name_entry.get()
@@ -165,13 +177,10 @@ class FileManager:
         selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
         full_path = os.path.join(self.current_directory, selected_item)
         if os.path.isdir(full_path):
-            if os.listdir(full_path):
-                if not messagebox.askyesno("Confirm Delete", f"Folder '{selected_item}' contains files. Do you want to delete it?"):
-                    return
-            if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete folder '{selected_item}'?"):
+            if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete folder '{selected_item}' and all its contents?"):
                 try:
-                    os.rmdir(full_path)
-                except OSError as e:
+                    shutil.rmtree(full_path)
+                except Exception as e:
                     messagebox.showerror("Error", f"Failed to delete directory: {e}")
         else:
             if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete file '{selected_item}'?"):
@@ -179,20 +188,57 @@ class FileManager:
         self.update_file_list()
 
     def create_directory(self):
-        dir_name = simpledialog.askstring("New Directory", "Enter directory name:", parent=self.root)
+        self.input_window = tk.Toplevel(self.root)
+        self.input_window.title("New Directory")
+        self.input_window.geometry("300x150")
+        self.input_window.transient(self.root)
+        self.input_window.grab_set()
+        self.center_window(self.input_window)
+
+        input_label = ttk.Label(self.input_window, text="Enter directory name:", font=("Helvetica", 12))
+        input_label.pack(pady=10)
+
+        self.dir_name_entry = ttk.Entry(self.input_window, width=30)
+        self.dir_name_entry.pack(pady=10)
+
+        create_button = ttk.Button(self.input_window, text="Create", command=self.create_directory_action, style="TButton")
+        create_button.pack(pady=10)
+
+    def create_directory_action(self):
+        dir_name = self.dir_name_entry.get()
         if dir_name:
             new_dir_path = os.path.join(self.current_directory, dir_name)
             os.mkdir(new_dir_path)
             self.update_file_list()
+        self.input_window.destroy()
 
     def rename_item(self):
         selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
-        new_name = simpledialog.askstring("Rename", "Enter new name:", parent=self.root)
+        self.input_window = tk.Toplevel(self.root)
+        self.input_window.title("Rename")
+        self.input_window.geometry("300x150")
+        self.input_window.transient(self.root)
+        self.input_window.grab_set()
+        self.center_window(self.input_window)
+
+        input_label = ttk.Label(self.input_window, text="Enter new name:", font=("Helvetica", 12))
+        input_label.pack(pady=10)
+
+        self.new_name_entry = ttk.Entry(self.input_window, width=30)
+        self.new_name_entry.pack(pady=10)
+
+        rename_button = ttk.Button(self.input_window, text="Rename", command=self.rename_action, style="TButton")
+        rename_button.pack(pady=10)
+
+    def rename_action(self):
+        new_name = self.new_name_entry.get()
         if new_name:
+            selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
             full_path = os.path.join(self.current_directory, selected_item)
             new_path = os.path.join(self.current_directory, new_name)
             os.rename(full_path, new_path)
             self.update_file_list()
+        self.input_window.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()
