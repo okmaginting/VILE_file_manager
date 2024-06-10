@@ -7,11 +7,13 @@ import shutil
 
 class FileManager:
     def __init__(self, root):
+        # Inisialisasi aplikasi file manager
         self.root = root
         self.root.title("VILE: File Manager")
         self.root.geometry("1000x600")
         self.current_directory = os.getcwd()
 
+        # Konfigurasi style untuk tombol dan entri
         self.style = ttk.Style()
         self.style.theme_use("clam")
         self.style.configure("TButton", padding=6, relief="flat", background="#444", foreground="white", font=("Helvetica", 10))
@@ -23,6 +25,7 @@ class FileManager:
         self.update_file_list()
 
     def create_widgets(self):
+        # Membuat dan menambahkan widget ke jendela aplikasi
         top_frame = ttk.Frame(self.root, padding=10)
         top_frame.pack(side=tk.TOP, fill=tk.X)
 
@@ -82,6 +85,7 @@ class FileManager:
         self.rename_button.pack(side=tk.LEFT, padx=5)
 
     def populate_tree(self):
+        # Memasukkan item ke dalam sidebar
         self.tree.insert('', 'end', 'computer', text='Computer')
         home = os.path.expanduser("~")
         self.tree.insert('computer', 'end', 'Desktop', text='Desktop')
@@ -92,6 +96,7 @@ class FileManager:
         self.tree.insert('computer', 'end', 'Videos', text='Videos')
 
     def change_directory(self, event):
+        # Mengubah direktori saat item sidebar dipilih
         selected_item = self.tree.selection()[0]
         if selected_item == 'computer':
             return
@@ -103,6 +108,7 @@ class FileManager:
         self.update_file_list()
 
     def update_file_list(self):
+        # Memperbarui daftar file di listbox
         for item in self.file_listbox.get_children():
             self.file_listbox.delete(item)
         self.current_directory = self.dir_entry.get()
@@ -120,15 +126,18 @@ class FileManager:
             messagebox.showerror("Error", f"Unable to access directory: {e}")
 
     def format_date(self, timestamp):
+        # Memformat tanggal dari timestamp
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
     def format_size(self, size):
+        # Memformat ukuran file menjadi string yang lebih mudah dibaca
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024:
                 return f"{size:.2f} {unit}"
             size /= 1024
 
     def open_item(self, event):
+        # Membuka item saat di-double click
         selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
         full_path = os.path.join(self.current_directory, selected_item)
         if os.path.isdir(full_path):
@@ -140,6 +149,7 @@ class FileManager:
             os.startfile(full_path)
 
     def create_file(self):
+        #Pop Up untuk memasukkan nama file baru
         self.input_window = tk.Toplevel(self.root)
         self.input_window.title("New File")
         self.input_window.geometry("300x150")
@@ -157,6 +167,7 @@ class FileManager:
         create_button.pack(pady=10)
 
     def center_window(self, window):
+        # MenPop Upengah layar
         window.update_idletasks()
         width = window.winfo_width()
         height = window.winfo_height()
@@ -165,6 +176,7 @@ class FileManager:
         window.geometry(f'{width}x{height}+{x}+{y}')
 
     def create_file_action(self):
+        # Membuat file baru dengan nama yang diberikan
         file_name = self.file_name_entry.get()
         if file_name:
             new_file_path = os.path.join(self.current_directory, file_name)
@@ -174,6 +186,7 @@ class FileManager:
         self.input_window.destroy()
 
     def delete_item(self):
+        # Menghapus file atau direktori yang dipilih
         selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
         full_path = os.path.join(self.current_directory, selected_item)
         if os.path.isdir(full_path):
@@ -188,6 +201,7 @@ class FileManager:
         self.update_file_list()
 
     def create_directory(self):
+        #Pop Up untuk memasukkan nama direktori baru
         self.input_window = tk.Toplevel(self.root)
         self.input_window.title("New Directory")
         self.input_window.geometry("300x150")
@@ -205,6 +219,7 @@ class FileManager:
         create_button.pack(pady=10)
 
     def create_directory_action(self):
+        # Membuat direktori baru dengan nama yang diberikan
         dir_name = self.dir_name_entry.get()
         if dir_name:
             new_dir_path = os.path.join(self.current_directory, dir_name)
@@ -213,6 +228,7 @@ class FileManager:
         self.input_window.destroy()
 
     def rename_item(self):
+        #Pop Up untuk memasukkan nama baru untuk item yang dipilih
         selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
         self.input_window = tk.Toplevel(self.root)
         self.input_window.title("Rename")
@@ -231,6 +247,7 @@ class FileManager:
         rename_button.pack(pady=10)
 
     def rename_action(self):
+        # Mengganti nama item yang dipilih dengan nama baru yang diberikan
         new_name = self.new_name_entry.get()
         if new_name:
             selected_item = self.file_listbox.item(self.file_listbox.selection()[0], 'values')[0]
